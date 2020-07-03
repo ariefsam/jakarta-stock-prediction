@@ -7,7 +7,17 @@ import (
 	"reflect"
 )
 
+var Cache map[string][]StockData
+
+func init() {
+	Cache = map[string][]StockData{}
+}
+
 func ReadData(filename string) (allData []StockData) {
+	if val, ok := Cache[filename]; ok {
+		allData = val
+		return
+	}
 	stockPrice, err := ioutil.ReadFile(filename)
 	if err != nil {
 		log.Println(err)
@@ -20,7 +30,7 @@ func ReadData(filename string) (allData []StockData) {
 		log.Println(err)
 		return
 	}
-
+	Cache[filename] = allData
 	return
 }
 
