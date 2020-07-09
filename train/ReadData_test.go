@@ -12,7 +12,7 @@ func TestReadData(t *testing.T) {
 	var stockData []train.StockData
 	stockData = train.ReadData("./ICBP.json")
 	expected := train.StockData{
-		1286409600000, 3000.0000, 3100.0000, 2850.0000, 2975.0000, 570465000,
+		1593648000000, 9250.0000, 9550.0000, 9225.0000, 9550.0000, 7749600,
 	}
 	assert.Equal(t, expected, stockData[0])
 

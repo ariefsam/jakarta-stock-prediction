@@ -7,8 +7,9 @@ import (
 )
 
 func TestTrain(t *testing.T) {
-	totalDay := 10
-	train.Train("data/", train.StockList, "data/modelTest.json", totalDay)
+	totalDay := 100
+	totalSlide := 10
+	train.Train("data/", train.StockList, "data/modelmodelTest.json", totalSlide, totalDay)
 	// network := persist.FromFile("data/modelTest.json")
 	// assert.NotNil(t, network.Enters[0])
 }

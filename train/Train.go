@@ -14,9 +14,10 @@ import (
 func Train(folderName string, stockList []string, fileName string, lastDayToCount int, totalDay int) {
 	log.Println("Folder name:", folderName)
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
-	var day, lastDataToCount int
+	var day int
 
-	totalInput := len(stockList) * (lastDataToCount)
+	totalInput := len(stockList) * (lastDayToCount)
+	// log.Println("total input", totalInput)
 
 	var network *neural.Network
 	if _, err := os.Stat(fileName); err == nil {
@@ -24,7 +25,7 @@ func Train(folderName string, stockList []string, fileName string, lastDayToCoun
 		network = persist.FromFile(fileName)
 
 	} else {
-		network = neural.NewNetwork(totalInput, []int{2, 2, len(stockList)})
+		network = neural.NewNetwork(totalInput, []int{9, 9, len(stockList)})
 		network.RandomizeSynapses()
 		fmt.Printf("File does not exist\n")
 	}
@@ -34,7 +35,7 @@ func Train(folderName string, stockList []string, fileName string, lastDayToCoun
 	engine := engine.New(network)
 	engine.Start()
 
-	totalIteration := 100000
+	totalIteration := 10000000
 	go func() {
 		for i := 0; i < totalIteration; i++ {
 			if (i % 1000) == 0 {
@@ -54,13 +55,13 @@ func Train(folderName string, stockList []string, fileName string, lastDayToCoun
 					if len(stockData) < totalDay {
 						log.Println("Saham ", code, " hanya sampai ", len(stockData), " hari")
 					}
-					extract := ExtractCloseToClose(stockData[:len(stockData)-day], (lastDataToCount + 1))
+					extract := ExtractHighToClose(stockData[:len(stockData)-day], (lastDayToCount + 1))
 
 					outputNeural = append(outputNeural, extract[0])
 					inputNeural = append(inputNeural, extract[1:]...)
 				}
 
-				engine.Learn(inputNeural, outputNeural, 1)
+				engine.Learn(inputNeural, outputNeural, 0.01)
 				// persist.ToFile(fileName, network)
 				day++
 			}
@@ -78,7 +79,7 @@ func Train(folderName string, stockList []string, fileName string, lastDayToCoun
 
 			// log.Println(code)
 			stockData := ReadData(folderName + code + ".json")
-			extract := ExtractCloseToClose(stockData, (lastDataToCount))
+			extract := ExtractHighToClose(stockData, (lastDayToCount))
 
 			inputToPredict = append(inputToPredict, extract...)
 		}
@@ -97,17 +98,17 @@ func Train(folderName string, stockList []string, fileName string, lastDayToCoun
 				maxout = out[index]
 				maxidx = code
 			}
-			if out[index] >= 0.01 {
+			if out[index] >= 0.03 {
 				naik = append(naik, code+" "+fmt.Sprintln(out[index]*float64(stockData[0][4])+float64(stockData[0][4]), "dari", stockData[0][4], "-", out[index]*100, "%"))
 			}
 
-			log.Println("Prediksi harga penutupan "+code+": ", out[index], "yaitu:", out[index]*float64(stockData[0][4])+float64(stockData[0][4]), "dari", stockData[0][4])
-			// log.Println("Prediksi harga tertinggi "+code+": ", out[index], "yaitu:", out[index]*float64(stockData[0][4])+float64(stockData[0][4]), "dari", stockData[0][4])
+			// log.Println("Prediksi harga penutupan "+code+": ", out[index], "yaitu:", out[index]*float64(stockData[0][4])+float64(stockData[0][4]), "dari", stockData[0][4])
+			log.Println("Prediksi harga tertinggi "+code+": ", out[index], "yaitu:", out[index]*float64(stockData[0][4])+float64(stockData[0][4]), "dari", stockData[0][4])
 			// log.Println(stockData)
 		}
-		log.Printf("naik di atas 1persen: \n%+v", naik)
+		log.Printf("naik di atas 3persen: \n%+v", naik)
 		log.Println("belilah saham ", maxidx)
 
-		time.Sleep(20 * time.Second)
+		time.Sleep(8 * time.Second)
 	}
 }
